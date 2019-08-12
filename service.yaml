@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-hub-publisher
+spec:
+  selector:
+    app: event-hub-publisher
+    tier: validator
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: http

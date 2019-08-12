@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-hub-publisher
+spec:
+  selector:
+    matchLabels:
+      app: event-hub-publisher
+      tier: api-endpoint
+      track: stable
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: event-hub-publisher
+        tier: api-endpoint
+        track: stable
+    spec:
+      containers:
+        - name: event-hub-publisher
+          image: "gcr.io/event-hub-249001/event-hub-publisher:0.0.1-SNAPSHOT"
+          imagePullPolicy: "Always"
+          ports:
+            - name: http
+              containerPort: 8080
