@@ -39,26 +39,26 @@ public class PublisherController {
 
 	@Autowired
 	RestTemplate restTemplate;
-	private String daoApiEndpoint = "http://localhost:8081";
+	private String daoApiEndpoint = "http://event-hub-dao:8080";
 	private static final String PROJECT_ID = "event-hub-249001";
 	private static final String TOPIC_ID = "consumer-events";
 	private static final String WORKSPACE = "DEV";
-	private String schemaApiEndpoint = "http://localhost:8083";
+	private String schemaApiEndpoint = "http://event-hub-schema:8080";
 	private Publisher publisher = null;
-	
+
 	@PostConstruct
 	public void init() throws Exception {
 		ProjectTopicName topicName = ProjectTopicName.of(PROJECT_ID, TOPIC_ID);
 		publisher = Publisher.newBuilder(topicName).build();
 	}
-	
+
 	@PreDestroy
 	public void cleanup() {
 		if (publisher != null) {
 			publisher.shutdown();
 		}
 	}
-	
+
 	@RequestMapping(value = "/publish", method = RequestMethod.POST)
 	public void publish(@RequestParam(name="jsonData") String body) throws Exception {
 
@@ -69,26 +69,26 @@ public class PublisherController {
 			JsonObject jsonObject = jsonData.getAsJsonObject();
 			String eventName = jsonObject.get("name").getAsString();
 			String orgId = jsonObject.get("orgId").getAsString();
-			EventDefinition definition = restTemplate.exchange(daoApiEndpoint + "/organization/eventDefinition?eventName=" + 
+			EventDefinition definition = restTemplate.exchange(daoApiEndpoint + "/organization/eventDefinition?eventName=" +
 					eventName + "&orgId=" + orgId + "&workspace=" + WORKSPACE, HttpMethod.GET, null,
 					new ParameterizedTypeReference<EventDefinition>() {
 					}).getBody();
-			
+
 			HttpHeaders headers1 = new HttpHeaders();
 			headers1.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-			
+
 			MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
 			map.add("jsonSchema",  definition.getSchema());
 			map.add("jsonData",  body);
-			
+
 			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers1);
 
 			ResponseEntity<String> response = restTemplate.postForEntity( schemaApiEndpoint + "/validate", request , String.class );
-			
+
 			if (!response.getStatusCode().equals(HttpStatus.OK)) {
 				throw new RuntimeException(response.getBody());
 			}
-			
+
 			// convert message to bytes
 			ByteString data = ByteString.copyFromUtf8(body);
 			PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(data).build();
