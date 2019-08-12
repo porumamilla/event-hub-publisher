@@ -5,7 +5,7 @@ metadata:
 spec:
   selector:
     app: event-hub-publisher
-    tier: validator
+    tier: api-endpoint
   ports:
   - protocol: TCP
     port: 8080
