@@ -10,5 +10,8 @@ mvn compile jib:dockerBuild
 ## Pushing to container registry
 mvn compile jib:build
 
-## Deploying to GKE
-kubectl apply -f deployment
+## Deploying workload to GKE
+kubectl apply -f deployment.yaml
+
+## Deploying service to GKE
+kubectl apply -f service.yaml
