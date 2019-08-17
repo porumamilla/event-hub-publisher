@@ -1,4 +1,5 @@
 com/eventhub/dao/model/EventDefinition.class
-com/eventhub/publisher/controller/PublisherController$1.class
 com/eventhub/publisher/controller/PublisherController.class
 com/eventhub/publisher/Application.class
+com/eventhub/publisher/config/ApiEndPointUri.class
+com/eventhub/publisher/controller/PublisherController$1.class

@@ -1,3 +1,4 @@
 /Users/raghu/event-hub-workspace/event-hub-publisher/src/main/java/com/eventhub/publisher/Application.java
+/Users/raghu/event-hub-workspace/event-hub-publisher/src/main/java/com/eventhub/publisher/config/ApiEndPointUri.java
 /Users/raghu/event-hub-workspace/event-hub-publisher/src/main/java/com/eventhub/publisher/controller/PublisherController.java
 /Users/raghu/event-hub-workspace/event-hub-publisher/src/main/java/com/eventhub/dao/model/EventDefinition.java

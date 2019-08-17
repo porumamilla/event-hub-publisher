@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import com.eventhub.dao.model.EventDefinition;
+import com.eventhub.publisher.config.ApiEndPointUri;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.Publisher;
@@ -39,13 +40,15 @@ public class PublisherController {
 
 	@Autowired
 	RestTemplate restTemplate;
-	private String daoApiEndpoint = "http://event-hub-dao:8080";
+	//private String daoApiEndpoint = "http://event-hub-dao:8080";
 	private static final String PROJECT_ID = "event-hub-249001";
 	private static final String TOPIC_ID = "consumer-events";
 	private static final String WORKSPACE = "DEV";
-	private String schemaApiEndpoint = "http://event-hub-schema:8080";
+	//private String schemaApiEndpoint = "http://event-hub-schema:8080";
 	private Publisher publisher = null;
-
+	@Autowired
+	ApiEndPointUri apiEndPointUri;
+	
 	@PostConstruct
 	public void init() throws Exception {
 		ProjectTopicName topicName = ProjectTopicName.of(PROJECT_ID, TOPIC_ID);
@@ -69,7 +72,7 @@ public class PublisherController {
 			JsonObject jsonObject = jsonData.getAsJsonObject();
 			String eventName = jsonObject.get("name").getAsString();
 			String orgId = jsonObject.get("orgId").getAsString();
-			EventDefinition definition = restTemplate.exchange(daoApiEndpoint + "/organization/eventDefinition?eventName=" +
+			EventDefinition definition = restTemplate.exchange(apiEndPointUri.getDaoApiEndpoint() + "/organization/eventDefinition?eventName=" +
 					eventName + "&orgId=" + orgId + "&workspace=" + WORKSPACE, HttpMethod.GET, null,
 					new ParameterizedTypeReference<EventDefinition>() {
 					}).getBody();
@@ -83,7 +86,7 @@ public class PublisherController {
 
 			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers1);
 
-			ResponseEntity<String> response = restTemplate.postForEntity( schemaApiEndpoint + "/validate", request , String.class );
+			ResponseEntity<String> response = restTemplate.postForEntity( apiEndPointUri.getSchemaApiEndpoint() + "/validate", request , String.class );
 
 			if (!response.getStatusCode().equals(HttpStatus.OK)) {
 				throw new RuntimeException(response.getBody());
