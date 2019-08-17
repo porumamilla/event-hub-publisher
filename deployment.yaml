@@ -32,6 +32,8 @@ spec:
             value: "event-hub-249001"
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: /var/secrets/google/key.json
+          - name: spring.profiles.active
+            value: gcp
           ports:
             - name: http
               containerPort: 8080
