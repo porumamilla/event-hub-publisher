@@ -28,6 +28,7 @@ import com.eventhub.publisher.config.ApiEndPointUri;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.Publisher;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -63,11 +64,11 @@ public class PublisherController {
 	}
 
 	@RequestMapping(value = "/publish", method = RequestMethod.POST)
-	public void publish(@RequestParam(name="jsonData") String body) throws Exception {
+	public void publish(@RequestBody String body) throws Exception {
 
 		List<ApiFuture<String>> futures = new ArrayList<>();
 		try {
-			System.out.println("body == " + body);
+			//System.out.println("body == " + body);
 			JsonElement jsonData = new JsonParser().parse(body);
 			JsonObject jsonObject = jsonData.getAsJsonObject();
 			String eventName = jsonObject.get("name").getAsString();
@@ -100,6 +101,57 @@ public class PublisherController {
 			ApiFuture<String> future = publisher.publish(pubsubMessage);
 			futures.add(future);
 
+		} finally {
+			// Wait on any pending requests
+			List<String> messageIds = ApiFutures.allAsList(futures).get();
+
+			for (String messageId : messageIds) {
+				System.out.println(messageId);
+			}
+		}
+	}
+	
+	@RequestMapping(value = "/publishBatch", method = RequestMethod.POST)
+	public void publishBatch(@RequestBody String body) throws Exception {
+
+		List<ApiFuture<String>> futures = new ArrayList<>();
+		try {
+			System.out.println("body == " + body);
+			JsonElement jsonData = new JsonParser().parse(body);
+			JsonArray jsonArray = jsonData.getAsJsonArray();
+			for (JsonElement jsonElement : jsonArray) {
+				JsonObject jsonObject = jsonElement.getAsJsonObject();
+				String eventName = jsonObject.get("name").getAsString();
+				//System.out.println("eventName == " + eventName);
+				String orgId = jsonObject.get("orgId").getAsString();
+				EventDefinition definition = restTemplate.exchange(apiEndPointUri.getDaoApiEndpoint() + "/organization/eventDefinition?eventName=" +
+						eventName + "&orgId=" + orgId + "&workspace=" + WORKSPACE, HttpMethod.GET, null,
+						new ParameterizedTypeReference<EventDefinition>() {
+						}).getBody();
+	
+				HttpHeaders headers1 = new HttpHeaders();
+				headers1.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+	
+				MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
+				map.add("jsonSchema",  definition.getSchema());
+				map.add("jsonData",  jsonObject.toString());
+				//System.out.println("jsonData == " + jsonObject.toString());
+				HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers1);
+	
+				ResponseEntity<String> response = restTemplate.postForEntity( apiEndPointUri.getSchemaApiEndpoint() + "/validate", request , String.class );
+	
+				if (!response.getStatusCode().equals(HttpStatus.OK)) {
+					throw new RuntimeException(response.getBody());
+				}
+	
+				// convert message to bytes
+				ByteString data = ByteString.copyFromUtf8(body);
+				PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(data).build();
+	
+				// Schedule a message to be published. Messages are automatically batched.
+				ApiFuture<String> future = publisher.publish(pubsubMessage);
+				futures.add(future);
+			}
 		} finally {
 			// Wait on any pending requests
 			List<String> messageIds = ApiFutures.allAsList(futures).get();
