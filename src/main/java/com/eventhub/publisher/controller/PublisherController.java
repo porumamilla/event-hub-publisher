@@ -2,6 +2,7 @@ package com.eventhub.publisher.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import com.eventhub.dao.model.EventDefinition;
+import com.eventhub.dao.model.Organization;
 import com.eventhub.publisher.config.ApiEndPointUri;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -72,9 +74,24 @@ public class PublisherController {
 			JsonElement jsonData = new JsonParser().parse(body);
 			JsonObject jsonObject = jsonData.getAsJsonObject();
 			String eventName = jsonObject.get("name").getAsString();
-			String orgId = jsonObject.get("orgId").getAsString();
+			String sourceKey = jsonObject.get("sourceKey").getAsString();
+			
+			Organization org = restTemplate.exchange(apiEndPointUri.getDaoApiEndpoint() + "/organizationBySourceKey?sourceKey=" +
+					sourceKey, HttpMethod.GET, null,
+					new ParameterizedTypeReference<Organization>() {
+					}).getBody();
+			
+			String workspace = null;
+			List<Map<String, String>> sourceTypes = org.getSourceTypes();
+			for (Map<String, String> sourceType : sourceTypes) {
+				if (sourceType.get("key").equals(sourceKey)) {
+					workspace = sourceType.get("workspace");
+					break;
+				}
+			}
+			
 			EventDefinition definition = restTemplate.exchange(apiEndPointUri.getDaoApiEndpoint() + "/organization/eventDefinition?eventName=" +
-					eventName + "&orgId=" + orgId + "&workspace=" + WORKSPACE, HttpMethod.GET, null,
+					eventName + "&orgId=" + org.getId() + "&workspace=" + workspace, HttpMethod.GET, null,
 					new ParameterizedTypeReference<EventDefinition>() {
 					}).getBody();
 
