@@ -1,6 +1,7 @@
 package com.eventhub.publisher.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -110,10 +111,13 @@ public class PublisherController {
 				throw new RuntimeException(response.getBody());
 			}
 
+			Map<String, String> attributes = new HashMap<String, String>();
+			attributes.put("orgId", org.getId());
+			attributes.put("workspace", workspace);
+			
 			// convert message to bytes
 			ByteString data = ByteString.copyFromUtf8(body);
-			PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(data).build();
-
+			PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(data).putAllAttributes(attributes).build();
 			// Schedule a message to be published. Messages are automatically batched.
 			ApiFuture<String> future = publisher.publish(pubsubMessage);
 			futures.add(future);
