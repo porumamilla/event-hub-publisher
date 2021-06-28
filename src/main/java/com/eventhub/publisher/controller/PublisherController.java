@@ -45,7 +45,7 @@ public class PublisherController {
 	@Autowired
 	RestTemplate restTemplate;
 	//private String daoApiEndpoint = "http://event-hub-dao:8080";
-	private static final String PROJECT_ID = "event-hub-249001";
+	private static final String PROJECT_ID = "event-hub-317019";
 	private static final String TOPIC_ID = "consumer-events";
 	private static final String WORKSPACE = "DEV";
 	//private String schemaApiEndpoint = "http://event-hub-schema:8080";
