@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{.Values.nameOverride}}"
+spec:
+  selector:
+    matchLabels:
+      app: "{{.Values.nameOverride}}"
+      tier: api-endpoint
+      track: stable
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: "{{.Values.nameOverride}}"
+        tier: api-endpoint
+        track: stable
+    spec:
+      volumes:
+      - name: event-hub-publisher-secrets-volume
+        secret:
+          secretName: event-hub-publisher-secret
+      containers:
+        - name: "{{.Values.nameOverride}}"
+          image: "gcr.io/{{ .Values.gcp_project }}/{{.Values.nameOverride}}:{{.Values.image.tag}}"
+          imagePullPolicy: "Always"
+          volumeMounts:
+          - name: event-hub-publisher-secrets-volume
+            mountPath: /var/secrets/event-hub-publisher-secret
+          env:
+          - name: GOOGLE_CLOUD_PROJECT
+            value: "{{ .Values.gcp_project }}"
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /var/secrets/event-hub-publisher-secret/{{ .Values.gcp_project }}-publisher-sa.json
+          - name: spring.profiles.active
+            value: gcp
+          ports:
+            - name: http
+              containerPort: 8080
