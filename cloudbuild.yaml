@@ -1,0 +1,17 @@
+steps:
+- name: gcr.io/cloud-builders/mvn
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    export PATH=$$PATH:. &&
+    curl -fsSL https://github.com/GoogleCloudPlatform/docker-credential-gcr/releases/download/v1.5.0/docker-credential-gcr_linux_amd64-1.5.0.tar.gz | tar zxv &&
+    chmod +x docker-credential-gcr &&
+    mvn -B clean compile -Dversion=$BUILD_ID jib:build -Dmaven.test.skip=true -Ddocker.image.prefix=gcr.io/$PROJECT_ID
+  
+- name: 'gcr.io/$PROJECT_ID/helm'
+  args: ['upgrade', '--install', '--set', 'image.tag=$BUILD_ID', 'event-hub-publisher', './helm']
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=my-first-cluster-1'
+  - 'TILLERLESS=true'
