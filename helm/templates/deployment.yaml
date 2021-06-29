@@ -8,7 +8,7 @@ spec:
       app: "{{.Values.nameOverride}}"
       tier: api-endpoint
       track: stable
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
