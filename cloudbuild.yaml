@@ -10,7 +10,7 @@ steps:
     mvn -B clean compile -Dversion=$BUILD_ID jib:build -Dmaven.test.skip=true -Ddocker.image.prefix=gcr.io/$PROJECT_ID
   
 - name: 'gcr.io/$PROJECT_ID/helm'
-  args: ['upgrade', '--install', '--set', 'image.tag=$BUILD_ID', 'event-hub-publisher', './helm']
+  args: ['upgrade', '--install', '--set', 'image.tag=$BUILD_ID', '--namespace', '$_K8S_NAMESPACE', 'event-hub-publisher', './helm']
   env:
   - 'CLOUDSDK_COMPUTE_REGION=us-central1'
   - 'CLOUDSDK_CONTAINER_CLUSTER=autopilot-cluster-1'
