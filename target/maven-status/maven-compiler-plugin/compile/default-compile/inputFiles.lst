@@ -1,6 +1,5 @@
 /home/raghu_porumamilla/event-hub-publisher/src/main/java/com/eventhub/dao/model/Organization.java
-/home/raghu_porumamilla/event-hub-publisher/src/main/java/com/eventhub/publisher/config/ApiEndPointUri.java
 /home/raghu_porumamilla/event-hub-publisher/src/main/java/com/eventhub/dao/model/EventDefinition.java
-/home/raghu_porumamilla/event-hub-publisher/src/main/java/com/eventhub/publisher/config/GcpProperties.java
+/home/raghu_porumamilla/event-hub-publisher/src/main/java/com/eventhub/publisher/config/ConfigProperties.java
 /home/raghu_porumamilla/event-hub-publisher/src/main/java/com/eventhub/publisher/controller/PublisherController.java
 /home/raghu_porumamilla/event-hub-publisher/src/main/java/com/eventhub/publisher/Application.java

@@ -27,8 +27,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.eventhub.dao.model.EventDefinition;
 import com.eventhub.dao.model.Organization;
-import com.eventhub.publisher.config.ApiEndPointUri;
-import com.eventhub.publisher.config.GcpProperties;
+import com.eventhub.publisher.config.ConfigProperties;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.Publisher;
@@ -46,14 +45,12 @@ public class PublisherController {
 	@Autowired
 	RestTemplate restTemplate;
 	private Publisher publisher = null;
-	@Autowired
-    ApiEndPointUri apiEndPointUri;
     @Autowired
-    GcpProperties gcpProperties;
+    ConfigProperties configProperties;
     
 	@PostConstruct
 	public void init() throws Exception {
-		ProjectTopicName topicName = ProjectTopicName.of(gcpProperties.getProject(), gcpProperties.getTopic());
+		ProjectTopicName topicName = ProjectTopicName.of(configProperties.getProject(), configProperties.getTopic());
 		publisher = Publisher.newBuilder(topicName).build();
 	}
 
@@ -75,7 +72,7 @@ public class PublisherController {
 			String eventName = jsonObject.get("name").getAsString();
 			String sourceKey = jsonObject.get("sourceKey").getAsString();
 			
-			Organization org = restTemplate.exchange(apiEndPointUri.getDaoApiEndpoint() + "/organizationBySourceKey?sourceKey=" +
+			Organization org = restTemplate.exchange(configProperties.getDaoApiEndpoint() + "/organizationBySourceKey?sourceKey=" +
 					sourceKey, HttpMethod.GET, null,
 					new ParameterizedTypeReference<Organization>() {
 					}).getBody();
@@ -89,7 +86,7 @@ public class PublisherController {
 				}
 			}
 			
-			EventDefinition definition = restTemplate.exchange(apiEndPointUri.getDaoApiEndpoint() + "/organization/eventDefinition?eventName=" +
+			EventDefinition definition = restTemplate.exchange(configProperties.getDaoApiEndpoint() + "/organization/eventDefinition?eventName=" +
 					eventName + "&orgId=" + org.getId() + "&workspace=" + workspace, HttpMethod.GET, null,
 					new ParameterizedTypeReference<EventDefinition>() {
 					}).getBody();
@@ -103,7 +100,7 @@ public class PublisherController {
 
 			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers1);
 
-			ResponseEntity<String> response = restTemplate.postForEntity( apiEndPointUri.getSchemaApiEndpoint() + "/validate", request , String.class );
+			ResponseEntity<String> response = restTemplate.postForEntity( configProperties.getSchemaApiEndpoint() + "/validate", request , String.class );
 
 			if (!response.getStatusCode().equals(HttpStatus.OK)) {
 				throw new RuntimeException(response.getBody());
@@ -143,8 +140,8 @@ public class PublisherController {
 				String eventName = jsonObject.get("name").getAsString();
 				//System.out.println("eventName == " + eventName);
 				String orgId = jsonObject.get("orgId").getAsString();
-				EventDefinition definition = restTemplate.exchange(apiEndPointUri.getDaoApiEndpoint() + "/organization/eventDefinition?eventName=" +
-						eventName + "&orgId=" + orgId + "&workspace=" + gcpProperties.getFirestoreWorkspace(), HttpMethod.GET, null,
+				EventDefinition definition = restTemplate.exchange(configProperties.getDaoApiEndpoint() + "/organization/eventDefinition?eventName=" +
+						eventName + "&orgId=" + orgId + "&workspace=" + configProperties.getFirestoreWorkspace(), HttpMethod.GET, null,
 						new ParameterizedTypeReference<EventDefinition>() {
 						}).getBody();
 	
@@ -157,7 +154,7 @@ public class PublisherController {
 				//System.out.println("jsonData == " + jsonObject.toString());
 				HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers1);
 	
-				ResponseEntity<String> response = restTemplate.postForEntity( apiEndPointUri.getSchemaApiEndpoint() + "/validate", request , String.class );
+				ResponseEntity<String> response = restTemplate.postForEntity( configProperties.getSchemaApiEndpoint() + "/validate", request , String.class );
 	
 				if (!response.getStatusCode().equals(HttpStatus.OK)) {
 					throw new RuntimeException(response.getBody());
