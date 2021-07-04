@@ -16,15 +16,25 @@ public class ConfigProperties {
 	public String getProject() {
 		return project;
     }
+    public void setProject(String project) {
+		this.project = project;
+    }
     
 	public String getTopic() {
 		return topic;
+    }
+    public void setTopic(String topic) {
+		this.topic = topic;
     }
 
     public String getFirestoreWorkspace() {
 		return firestoreWorkspace;
 	}
     
+    public void setFirestoreWorkspace(String firestoreWorkspace) {
+		this.firestoreWorkspace = firestoreWorkspace;
+    }
+
     private String daoApiEndpoint;
 	private String schemaApiEndpoint;
 	
