@@ -28,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 import com.eventhub.dao.model.EventDefinition;
 import com.eventhub.dao.model.Organization;
 import com.eventhub.publisher.config.ApiEndPointUri;
+import com.eventhub.publisher.config.GcpProperties;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.Publisher;
@@ -44,18 +45,15 @@ public class PublisherController {
 
 	@Autowired
 	RestTemplate restTemplate;
-	//private String daoApiEndpoint = "http://event-hub-dao:8080";
-	private static final String PROJECT_ID = "event-hub-317019";
-	private static final String TOPIC_ID = "consumer-events";
-	private static final String WORKSPACE = "DEV";
-	//private String schemaApiEndpoint = "http://event-hub-schema:8080";
 	private Publisher publisher = null;
 	@Autowired
-	ApiEndPointUri apiEndPointUri;
-	
+    ApiEndPointUri apiEndPointUri;
+    @Autowired
+    GcpProperties gcpProperties;
+    
 	@PostConstruct
 	public void init() throws Exception {
-		ProjectTopicName topicName = ProjectTopicName.of(PROJECT_ID, TOPIC_ID);
+		ProjectTopicName topicName = ProjectTopicName.of(gcpProperties.getProject(), gcpProperties.getTopic());
 		publisher = Publisher.newBuilder(topicName).build();
 	}
 
@@ -146,7 +144,7 @@ public class PublisherController {
 				//System.out.println("eventName == " + eventName);
 				String orgId = jsonObject.get("orgId").getAsString();
 				EventDefinition definition = restTemplate.exchange(apiEndPointUri.getDaoApiEndpoint() + "/organization/eventDefinition?eventName=" +
-						eventName + "&orgId=" + orgId + "&workspace=" + WORKSPACE, HttpMethod.GET, null,
+						eventName + "&orgId=" + orgId + "&workspace=" + gcpProperties.getFirestoreWorkspace(), HttpMethod.GET, null,
 						new ParameterizedTypeReference<EventDefinition>() {
 						}).getBody();
 	
